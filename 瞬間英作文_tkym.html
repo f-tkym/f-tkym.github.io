@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>瞬間英作文_tkym</title>
+  <style>
+    :root{
+      --bg:#f6f7fb;
+      --panel:#ffffff;
+      --text:#1f2937;
+      --muted:#6b7280;
+      --accent:#2563eb;
+      --border:#d1d5db;
+      --light:#eef2ff;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+    .wrap{
+      display:flex;
+      min-height:100vh;
+      gap:16px;
+      padding:16px;
+    }
+    .main{
+      flex:1;
+      background:var(--panel);
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:24px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .card{
+      width:min(100%, 880px);
+      text-align:center;
+    }
+    .row{
+      margin:18px 0;
+      padding:16px 18px;
+      border:1px solid var(--border);
+      border-radius:12px;
+      background:#fff;
+      min-height:64px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:clamp(18px, 3vw, 28px);
+      line-height:1.5;
+      white-space:pre-wrap;
+      word-break:break-word;
+    }
+    .label{
+      font-size:13px;
+      color:var(--muted);
+      margin-bottom:6px;
+      text-align:left;
+    }
+    .sidebar{
+      width:280px;
+      background:var(--panel);
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:16px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      justify-content:flex-start;
+    }
+    button{
+      width:100%;
+      border:0;
+      background:var(--accent);
+      color:#fff;
+      padding:14px 16px;
+      border-radius:12px;
+      font-size:16px;
+      font-weight:700;
+      cursor:pointer;
+    }
+    button:disabled{
+      opacity:.55;
+      cursor:not-allowed;
+    }
+    .status{
+      padding:12px 14px;
+      border-radius:12px;
+      background:var(--light);
+      color:#1e3a8a;
+      font-size:14px;
+      line-height:1.6;
+      min-height:72px;
+      white-space:pre-wrap;
+    }
+    .hint{
+      font-size:13px;
+      color:var(--muted);
+      line-height:1.6;
+    }
+    @media (max-width: 900px){
+      .wrap{flex-direction:column;}
+      .sidebar{width:100%;}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="main">
+      <div class="card">
+        <div class="label">データ番号</div>
+        <div id="num" class="row">-</div>
+
+        <div class="label">話者名</div>
+        <div id="speaker" class="row">-</div>
+
+        <div class="label">日本文</div>
+        <div id="jp" class="row">-</div>
+
+        <div class="label">英文</div>
+        <div id="en" class="row">-</div>
+      </div>
+    </div>
+
+    <aside class="sidebar">
+      <button id="loadBtn">データ読み込み</button>
+      <div id="status" class="status">
+        右のボタンでデータを読み込みます。
+      </div>
+      <div class="hint">
+        1回押すごとに1行進みます。<br>
+        データ番号・話者名・日本文を表示し、4秒後に英文を表示します。
+      </div>
+    </aside>
+  </div>
+
+  <script>
+    const FILE_URL = "https://drive.google.com/file/d/1qI2FGz7iy0giIq1ouvOR4yN0IkZGjwo-/view?usp=sharing";
+    const numEl = document.getElementById("num");
+    const speakerEl = document.getElementById("speaker");
+    const jpEl = document.getElementById("jp");
+    const enEl = document.getElementById("en");
+    const statusEl = document.getElementById("status");
+    const loadBtn = document.getElementById("loadBtn");
+
+    let rows = [];
+    let index = 0;
+    let timer = null;
+    let loaded = false;
+
+    function setText(el, text) {
+      el.textContent = text ?? "";
+    }
+
+    function resetEnglish() {
+      setText(enEl, "（4秒後に表示）");
+    }
+
+    function showCurrentRow() {
+      if (!rows.length) return;
+      const row = rows[index];
+      setText(numEl, row[0] || "");
+      setText(speakerEl, row[1] || "");
+      setText(jpEl, row[2] || "");
+      setText(enEl, "（4秒後に表示）");
+      statusEl.textContent = `読み込み完了: ${index + 1} / ${rows.length}\n4秒後に英文を表示します。`;
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        setText(enEl, row[3] || "");
+        statusEl.textContent = `表示中: ${index + 1} / ${rows.length}\n次の行はもう一度ボタンを押してください。`;
+      }, 4000);
+      index = (index + 1) % rows.length;
+    }
+
+    function parseCSV(text) {
+      const lines = text.replace(/^\uFEFF/, "").split(/\r?\n/).filter(v => v.trim() !== "");
+      return lines.map(line => {
+        const cells = [];
+        let cur = "";
+        let inQuotes = false;
+        for (let i = 0; i < line.length; i++) {
+          const ch = line[i];
+          const next = line[i + 1];
+          if (ch === '"' && inQuotes && next === '"') {
+            cur += '"';
+            i++;
+          } else if (ch === '"') {
+            inQuotes = !inQuotes;
+          } else if (ch === ',' && !inQuotes) {
+            cells.push(cur);
+            cur = "";
+          } else {
+            cur += ch;
+          }
+        }
+        cells.push(cur);
+        return cells.map(s => s.trim());
+      });
+    }
+
+    async function loadData() {
+      try {
+        loadBtn.disabled = true;
+        statusEl.textContent = "データを読み込み中...";
+        const res = await fetch(FILE_URL, { cache: "no-store" });
+        if (!res.ok) throw new Error("failed to fetch");
+        const text = await res.text();
+        const data = parseCSV(text);
+
+        if (!data.length) throw new Error("empty file");
+
+        rows = data.map(r => [r[0] || "", r[1] || "", r[2] || "", r[3] || ""]);
+        index = 0;
+        loaded = true;
+
+        statusEl.textContent = `読み込みました。全 ${rows.length} 行。`;
+        showCurrentRow();
+      } catch (e) {
+        statusEl.textContent = "読み込みに失敗しました。\nGoogle Drive側で「リンクを知っている全員」に公開し、CSV/テキストとして取得できる状態にしてください。";
+      } finally {
+        loadBtn.disabled = false;
+      }
+    }
+
+    loadBtn.addEventListener("click", loadData);
+    resetEnglish();
+  </script>
+</body>
+</html>
