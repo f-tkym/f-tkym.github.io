@@ -220,7 +220,7 @@
         statusEl.textContent = `読み込みました。全 ${rows.length} 行。`;
         showCurrentRow();
       } catch (e) {
-	console.log('time');
+	console.log(e);
         statusEl.textContent = "読み込みに失敗しました。\nGoogle Drive側で「リンクを知っている全員」に公開し、CSV/テキストとして取得できる状態にしてください。";
       } finally {
         loadBtn.disabled = false;
