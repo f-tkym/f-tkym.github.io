@@ -13,6 +13,8 @@
       --accent: #2563eb;
       --border: #d1d5db;
       --light: #eef2ff;
+      --btn-read: #059669;
+      --btn-read-hover: #047857;
     }
     * { box-sizing: border-box; }
     body {
@@ -21,6 +23,7 @@
       background: var(--bg);
       color: var(--text);
       line-height: 1.6;
+      -webkit-text-size-adjust: 100%;
     }
     .container {
       max-width: 900px;
@@ -48,12 +51,10 @@
       font-family: monospace;
       letter-spacing: 0.05em;
     }
-    /* データ番号：5文字幅 */
     .data-number {
       width: 5ch;
       text-align: center;
     }
-    /* 話者名：10文字幅 */
     .speaker-name {
       width: 10ch;
       text-align: left;
@@ -70,22 +71,52 @@
     .row {
       margin-bottom: 1.25rem;
     }
+    .label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.25rem;
+    }
     .label {
       font-size: 0.85rem;
       color: var(--muted);
-      margin-bottom: 0.25rem;
     }
     .content {
       font-size: 1.05rem;
       min-height: 1.6em;
     }
+    .english-row {
+      display: flex;
+      gap: 0.75rem;
+      align-items: flex-start;
+    }
     .english {
+      flex: 1;
       background: var(--light);
       border-left: 4px solid var(--accent);
       padding: 0.75rem 1rem;
       border-radius: 0 6px 6px 0;
       font-weight: 500;
       display: none;
+    }
+    .btn-read {
+      background: var(--btn-read);
+      color: #fff;
+      border: none;
+      padding: 0.6rem 1rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.2s ease;
+    }
+    .btn-read:hover {
+      background: var(--btn-read-hover);
+    }
+    .btn-read:disabled {
+      background: var(--muted);
+      cursor: not-allowed;
     }
     .controls {
       display: flex;
@@ -119,13 +150,23 @@
       color: var(--muted);
       margin-top: 2rem;
     }
+
+    /* iPad 向けのフォント調整 */
+    @media (max-width: 1024px) {
+      .container {
+        margin: 1rem auto;
+        padding: 0 0.75rem;
+      }
+      .main-panel {
+        padding: 1.25rem;
+      }
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>瞬間英作文トレーニング</h1>
 
-    <!-- ヘッダー行：データ番号＋話者名（上部に並列） -->
     <div class="header-row">
       <div id="dispNumber" class="header-item data-number">-</div>
       <div id="dispSpeaker" class="header-item speaker-name">-</div>
@@ -137,8 +178,13 @@
         <div id="dispJapanese" class="content">－</div>
       </div>
       <div class="row">
-        <div class="label">英文</div>
-        <div id="dispEnglish" class="content english">－</div>
+        <div class="label-row">
+          <div class="label">英文</div>
+          <button id="btnEngRead" class="btn-read" disabled>Eng_Read</button>
+        </div>
+        <div class="english-row">
+          <div id="dispEnglish" class="content english">－</div>
+        </div>
       </div>
 
       <div class="controls">
@@ -155,22 +201,36 @@
     let allRows = [];
     let currentIndex = 0;
     let timer = null;
+    let currentEnglishText = "";
 
     const loadBtn = document.getElementById("loadBtn");
+    const btnEngRead = document.getElementById("btnEngRead");
     const dispNumber = document.getElementById("dispNumber");
     const dispSpeaker = document.getElementById("dispSpeaker");
     const dispJapanese = document.getElementById("dispJapanese");
     const dispEnglish = document.getElementById("dispEnglish");
 
+    // 音声合成の初期化（iOS/iPadOS 対策）
+    function initSpeech() {
+      // iOS では speechSynthesis.getVoices() が非同期でロードされるため
+      if ("speechSynthesis" in window) {
+        window.speechSynthesis.getVoices();
+      }
+    }
+    initSpeech();
+    if (document.readyState !== "complete") {
+      window.addEventListener("load", initSpeech);
+    }
+
     async function loadData() {
       resetDisplay();
       loadBtn.disabled = true;
+      btnEngRead.disabled = true;
       try {
         const response = await fetch("AI_260629_1.csv");
         if (!response.ok) throw new Error("ファイル取得失敗");
         const text = await response.text();
         const lines = text.split(/\r?\n/).filter(line => line.trim() !== "");
-        // ヘッダー行がある場合はスキップ
         const startRow = lines[0].includes("話者") || lines[0].includes("Speaker") ? 1 : 0;
         allRows = [];
         for (let i = startRow; i < lines.length; i++) {
@@ -229,6 +289,7 @@
     }
 
     function showCurrentRow() {
+      btnEngRead.disabled = true;
       if (currentIndex >= allRows.length) {
         dispNumber.textContent = "終了";
         dispSpeaker.textContent = "-";
@@ -237,6 +298,7 @@
         return;
       }
       const row = allRows[currentIndex];
+      currentEnglishText = row.english;
       dispNumber.textContent = row.number;
       dispSpeaker.textContent = row.speaker;
       dispJapanese.textContent = row.japanese;
@@ -246,6 +308,7 @@
       if (timer) clearTimeout(timer);
       timer = setTimeout(() => {
         dispEnglish.style.display = "block";
+        btnEngRead.disabled = false;
         speakEnglish(row.english);
       }, 4000);
     }
@@ -256,23 +319,57 @@
       dispJapanese.textContent = "－";
       dispEnglish.textContent = "－";
       dispEnglish.style.display = "none";
+      btnEngRead.disabled = true;
+      currentEnglishText = "";
       if (timer) clearTimeout(timer);
+      if ("speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+      }
     }
 
     function speakEnglish(text) {
       if (!text || text.trim() === "") return;
-      // 音声合成が利用可能かチェック
-      if ("speechSynthesis" in window) {
-        // 既存の音声をキャンセル（連続再生を防ぐ）
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = "en-US";  // 英語の発音
-        utterance.rate = 0.9;      // 若干ゆっくり
-        utterance.pitch = 1.0;
-        window.speechSynthesis.speak(utterance);
+      if (!("speechSynthesis" in window)) {
+        console.warn("このブラウザは音声合成をサポートしていません");
+        return;
       }
-      // 非対応ブラウザでは何もしない（エラーは出さない）
+
+      // 既存の音声をキャンセル
+      window.speechSynthesis.cancel();
+
+      // iOS/iPadOS 対策: 短時間待ってから Speak
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = "en-US";
+      utterance.rate = 0.9;
+      utterance.pitch = 1.0;
+
+      // ボリュームを最大に（デバイス依存）
+      utterance.volume = 1.0;
+
+      // iOS で音が鳴らない場合のフォールバック: 複数回試行
+      let spoken = false;
+      utterance.onstart = () => { spoken = true; };
+      utterance.onend = () => {
+        if (!spoken) {
+          // 何らかの理由で start が呼ばれなかった場合、再度試行
+          setTimeout(() => {
+            window.speechSynthesis.speak(new SpeechSynthesisUtterance(text));
+          }, 100);
+        }
+      };
+
+      // 実際の発話
+      setTimeout(() => {
+        window.speechSynthesis.speak(utterance);
+      }, 50);
     }
+
+    // Eng_Read ボタンのイベント
+    btnEngRead.addEventListener("click", () => {
+      if (currentEnglishText && currentEnglishText.trim() !== "") {
+        speakEnglish(currentEnglishText);
+      }
+    });
 
     loadBtn.addEventListener("click", () => {
       if (allRows.length === 0) {
