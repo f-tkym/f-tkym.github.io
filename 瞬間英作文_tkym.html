@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>瞬間英作文_tkym</title>
+  <title>瞬間英作文_tkym（進捗管理付き）</title>
   <style>
     :root {
       --bg: #f6f7fb;
@@ -35,8 +35,6 @@
       margin-bottom: 1.5rem;
       text-align: center;
     }
-
-    /* ヘッダー表示欄（データ番号＋話者名） */
     .header-row {
       display: flex;
       gap: 1rem;
@@ -51,15 +49,8 @@
       font-family: monospace;
       letter-spacing: 0.05em;
     }
-    .data-number {
-      width: 5ch;
-      text-align: center;
-    }
-    .speaker-name {
-      width: 10ch;
-      text-align: left;
-    }
-
+    .data-number { width: 5ch; text-align: center; }
+    .speaker-name { width: 10ch; text-align: left; }
     .main-panel {
       background: var(--panel);
       border: 1px solid var(--border);
@@ -68,23 +59,15 @@
       margin-bottom: 1.5rem;
       box-shadow: 0 1px 3px rgba(0,0,0,0.06);
     }
-    .row {
-      margin-bottom: 1.25rem;
-    }
+    .row { margin-bottom: 1.25rem; }
     .label-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 0.25rem;
     }
-    .label {
-      font-size: 0.85rem;
-      color: var(--muted);
-    }
-    .content {
-      font-size: 1.05rem;
-      min-height: 1.6em;
-    }
+    .label { font-size: 0.85rem; color: var(--muted); }
+    .content { font-size: 1.05rem; min-height: 1.6em; }
     .english-row {
       display: flex;
       gap: 0.75rem;
@@ -111,13 +94,8 @@
       white-space: nowrap;
       transition: background 0.2s ease;
     }
-    .btn-read:hover {
-      background: var(--btn-read-hover);
-    }
-    .btn-read:disabled {
-      background: var(--muted);
-      cursor: not-allowed;
-    }
+    .btn-read:hover { background: var(--btn-read-hover); }
+    .btn-read:disabled { background: var(--muted); cursor: not-allowed; }
     .controls {
       display: flex;
       justify-content: flex-end;
@@ -134,38 +112,32 @@
       cursor: pointer;
       transition: background 0.2s ease, transform 0.05s ease;
     }
-    button:hover {
-      background: #1d4ed8;
-    }
-    button:active {
-      transform: translateY(1px);
-    }
-    button:disabled {
-      background: var(--muted);
-      cursor: not-allowed;
-    }
+    button:hover { background: #1d4ed8; }
+    button:active { transform: translateY(1px); }
+    button:disabled { background: var(--muted); cursor: not-allowed; }
     .footer-note {
       text-align: center;
       font-size: 0.85rem;
       color: var(--muted);
       margin-top: 2rem;
     }
-
-    /* iPad 向けのフォント調整 */
+    .progress-info {
+      font-size: 0.85rem;
+      color: var(--muted);
+      text-align: right;
+      margin-bottom: 0.5rem;
+    }
     @media (max-width: 1024px) {
-      .container {
-        margin: 1rem auto;
-        padding: 0 0.75rem;
-      }
-      .main-panel {
-        padding: 1.25rem;
-      }
+      .container { margin: 1rem auto; padding: 0 0.75rem; }
+      .main-panel { padding: 1.25rem; }
     }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>瞬間英作文トレーニング</h1>
+
+    <div class="progress-info" id="progressInfo">－</div>
 
     <div class="header-row">
       <div id="dispNumber" class="header-item data-number">-</div>
@@ -189,6 +161,7 @@
 
       <div class="controls">
         <button id="loadBtn">データ読み込み</button>
+        <button id="resetBtn">進捗リセット</button>
       </div>
     </div>
 
@@ -202,17 +175,18 @@
     let currentIndex = 0;
     let timer = null;
     let currentEnglishText = "";
+    const STORAGE_KEY = "tkym_progress";
 
     const loadBtn = document.getElementById("loadBtn");
+    const resetBtn = document.getElementById("resetBtn");
     const btnEngRead = document.getElementById("btnEngRead");
     const dispNumber = document.getElementById("dispNumber");
     const dispSpeaker = document.getElementById("dispSpeaker");
     const dispJapanese = document.getElementById("dispJapanese");
     const dispEnglish = document.getElementById("dispEnglish");
+    const progressInfo = document.getElementById("progressInfo");
 
-    // 音声合成の初期化（iOS/iPadOS 対策）
     function initSpeech() {
-      // iOS では speechSynthesis.getVoices() が非同期でロードされるため
       if ("speechSynthesis" in window) {
         window.speechSynthesis.getVoices();
       }
@@ -220,6 +194,27 @@
     initSpeech();
     if (document.readyState !== "complete") {
       window.addEventListener("load", initSpeech);
+    }
+
+    // 進捗データの読み込み
+    function loadProgress() {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        const [lastDate, lastIndex] = stored.split(",");
+        return { date: lastDate, index: parseInt(lastIndex, 10) || 0 };
+      }
+      return null;
+    }
+
+    // 進捗データの保存
+    function saveProgress(index) {
+      const today = new Date().toISOString().slice(0, 10);
+      localStorage.setItem(STORAGE_KEY, `${today},${index}`);
+      updateProgressInfo(today, index);
+    }
+
+    function updateProgressInfo(date, index) {
+      progressInfo.textContent = `最終学習: ${date}（データ番号 ${index}）`;
     }
 
     async function loadData() {
@@ -247,7 +242,15 @@
         if (allRows.length === 0) {
           throw new Error("有効なデータ行がありません");
         }
-        currentIndex = 0;
+
+        // 進捗データから currentIndex を設定
+        const progress = loadProgress();
+        if (progress && progress.index >= 1 && progress.index < allRows.length) {
+          currentIndex = progress.index;
+        } else {
+          currentIndex = 0;
+        }
+
         showCurrentRow();
       } catch (err) {
         alert("エラー: " + err.message);
@@ -295,6 +298,9 @@
         dispSpeaker.textContent = "-";
         dispJapanese.textContent = "すべてのデータを読み込みました";
         dispEnglish.style.display = "none";
+        // 次回は 1 番から
+        currentIndex = 0;
+        saveProgress(0);
         return;
       }
       const row = allRows[currentIndex];
@@ -310,6 +316,8 @@
         dispEnglish.style.display = "block";
         btnEngRead.disabled = false;
         speakEnglish(row.english);
+        // 学習完了時に進捗を保存（現在のデータ番号）
+        saveProgress(currentIndex + 1);
       }, 4000);
     }
 
@@ -333,38 +341,26 @@
         console.warn("このブラウザは音声合成をサポートしていません");
         return;
       }
-
-      // 既存の音声をキャンセル
       window.speechSynthesis.cancel();
-
-      // iOS/iPadOS 対策: 短時間待ってから Speak
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = "en-US";
       utterance.rate = 0.9;
       utterance.pitch = 1.0;
-
-      // ボリュームを最大に（デバイス依存）
       utterance.volume = 1.0;
-
-      // iOS で音が鳴らない場合のフォールバック: 複数回試行
       let spoken = false;
       utterance.onstart = () => { spoken = true; };
       utterance.onend = () => {
         if (!spoken) {
-          // 何らかの理由で start が呼ばれなかった場合、再度試行
           setTimeout(() => {
             window.speechSynthesis.speak(new SpeechSynthesisUtterance(text));
           }, 100);
         }
       };
-
-      // 実際の発話
       setTimeout(() => {
         window.speechSynthesis.speak(utterance);
       }, 50);
     }
 
-    // Eng_Read ボタンのイベント
     btnEngRead.addEventListener("click", () => {
       if (currentEnglishText && currentEnglishText.trim() !== "") {
         speakEnglish(currentEnglishText);
@@ -379,6 +375,22 @@
         showCurrentRow();
       }
     });
+
+    resetBtn.addEventListener("click", () => {
+      if (confirm("進捗データをリセットしますか？")) {
+        localStorage.removeItem(STORAGE_KEY);
+        progressInfo.textContent = "－";
+        currentIndex = 0;
+        resetDisplay();
+        alert("進捗をリセットしました。次回はデータ 1 番から開始します。");
+      }
+    });
+
+    // 初回表示時に進捗情報を表示
+    const progress = loadProgress();
+    if (progress) {
+      updateProgressInfo(progress.date, progress.index);
+    }
   </script>
 </body>
 </html>
