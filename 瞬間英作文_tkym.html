@@ -15,6 +15,10 @@
       --light: #eef2ff;
       --btn-read: #059669;
       --btn-read-hover: #047857;
+      --btn-danger: #dc2626;
+      --btn-danger-hover: #b91c1c;
+      --btn-end: #7c3aed;
+      --btn-end-hover: #6d28d9;
     }
     * { box-sizing: border-box; }
     body {
@@ -35,6 +39,50 @@
       margin-bottom: 1.5rem;
       text-align: center;
     }
+
+    /* 上部コントロール（進捗リセット＋終了） */
+    .top-controls {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+    .btn-reset {
+      background: var(--btn-danger);
+      color: #fff;
+      border: none;
+      padding: 0.5rem 0.9rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    .btn-reset:hover {
+      background: var(--btn-danger-hover);
+    }
+    .btn-end {
+      background: var(--btn-end);
+      color: #fff;
+      border: none;
+      padding: 0.5rem 0.9rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    .btn-end:hover {
+      background: var(--btn-end-hover);
+    }
+
+    .progress-info {
+      font-size: 0.85rem;
+      color: var(--muted);
+      text-align: right;
+      margin-bottom: 0.5rem;
+    }
+
     .header-row {
       display: flex;
       gap: 1rem;
@@ -51,6 +99,7 @@
     }
     .data-number { width: 5ch; text-align: center; }
     .speaker-name { width: 10ch; text-align: left; }
+
     .main-panel {
       background: var(--panel);
       border: 1px solid var(--border);
@@ -96,6 +145,7 @@
     }
     .btn-read:hover { background: var(--btn-read-hover); }
     .btn-read:disabled { background: var(--muted); cursor: not-allowed; }
+
     .controls {
       display: flex;
       justify-content: flex-end;
@@ -115,27 +165,30 @@
     button:hover { background: #1d4ed8; }
     button:active { transform: translateY(1px); }
     button:disabled { background: var(--muted); cursor: not-allowed; }
+
     .footer-note {
       text-align: center;
       font-size: 0.85rem;
       color: var(--muted);
       margin-top: 2rem;
     }
-    .progress-info {
-      font-size: 0.85rem;
-      color: var(--muted);
-      text-align: right;
-      margin-bottom: 0.5rem;
-    }
+
     @media (max-width: 1024px) {
       .container { margin: 1rem auto; padding: 0 0.75rem; }
       .main-panel { padding: 1.25rem; }
+      .top-controls { flex-wrap: wrap; }
     }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>瞬間英作文トレーニング</h1>
+
+    <!-- 上部コントロール -->
+    <div class="top-controls">
+      <button id="resetBtn" class="btn-reset">進捗リセット</button>
+      <button id="endBtn" class="btn-end">終了</button>
+    </div>
 
     <div class="progress-info" id="progressInfo">－</div>
 
@@ -161,7 +214,6 @@
 
       <div class="controls">
         <button id="loadBtn">データ読み込み</button>
-        <button id="resetBtn">進捗リセット</button>
       </div>
     </div>
 
@@ -175,10 +227,12 @@
     let currentIndex = 0;
     let timer = null;
     let currentEnglishText = "";
+    let lastCompletedIndex = 0; // 最後に完了したデータ番号
     const STORAGE_KEY = "tkym_progress";
 
     const loadBtn = document.getElementById("loadBtn");
     const resetBtn = document.getElementById("resetBtn");
+    const endBtn = document.getElementById("endBtn");
     const btnEngRead = document.getElementById("btnEngRead");
     const dispNumber = document.getElementById("dispNumber");
     const dispSpeaker = document.getElementById("dispSpeaker");
@@ -206,15 +260,31 @@
       return null;
     }
 
-    // 進捗データの保存
+    // 進捗データの保存（localStorage）
     function saveProgress(index) {
       const today = new Date().toISOString().slice(0, 10);
       localStorage.setItem(STORAGE_KEY, `${today},${index}`);
       updateProgressInfo(today, index);
+      lastCompletedIndex = index;
     }
 
     function updateProgressInfo(date, index) {
       progressInfo.textContent = `最終学習: ${date}（データ番号 ${index}）`;
+    }
+
+    // tkym_eng.txt としてダウンロード
+    function downloadProgressFile() {
+      const today = new Date().toISOString().slice(0, 10);
+      const content = `${today},${lastCompletedIndex}`;
+      const blob = new Blob([content], { type: "text/plain" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "tkym_eng.txt";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
     }
 
     async function loadData() {
@@ -247,8 +317,10 @@
         const progress = loadProgress();
         if (progress && progress.index >= 1 && progress.index < allRows.length) {
           currentIndex = progress.index;
+          lastCompletedIndex = progress.index;
         } else {
           currentIndex = 0;
+          lastCompletedIndex = 0;
         }
 
         showCurrentRow();
@@ -316,7 +388,7 @@
         dispEnglish.style.display = "block";
         btnEngRead.disabled = false;
         speakEnglish(row.english);
-        // 学習完了時に進捗を保存（現在のデータ番号）
+        // 学習完了時に進捗を保存（現在のデータ番号 + 1）
         saveProgress(currentIndex + 1);
       }, 4000);
     }
@@ -381,15 +453,23 @@
         localStorage.removeItem(STORAGE_KEY);
         progressInfo.textContent = "－";
         currentIndex = 0;
+        lastCompletedIndex = 0;
         resetDisplay();
         alert("進捗をリセットしました。次回はデータ 1 番から開始します。");
       }
+    });
+
+    endBtn.addEventListener("click", () => {
+      // tkym_eng.txt をダウンロード
+      downloadProgressFile();
+      alert("tkym_eng.txt をダウンロードしました。\n次回の学習時は、このファイルをもとに再開します（localStorage とも連携）。");
     });
 
     // 初回表示時に進捗情報を表示
     const progress = loadProgress();
     if (progress) {
       updateProgressInfo(progress.date, progress.index);
+      lastCompletedIndex = progress.index;
     }
   </script>
 </body>
