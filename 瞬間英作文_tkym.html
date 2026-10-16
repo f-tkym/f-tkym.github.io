@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>瞬間英作文_tkym（暗記レベル付き）</title>
+  <title>瞬間英作文_tkym</title>
+
   <style>
     :root {
       --bg: #f6f7fb;
@@ -21,27 +22,59 @@
       --btn-end-hover: #6d28d9;
       --btn-ok: #0891b2;
       --btn-ok-hover: #0e7490;
-      --btn-stop: #dc2626;
-      --btn-stop-hover: #b91c1c;
+      --btn-stop: #991b1b;
+      --btn-stop-hover: #7f1d1d;
     }
-    * { box-sizing: border-box; }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family:
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
       background: var(--bg);
       color: var(--text);
       line-height: 1.6;
       -webkit-text-size-adjust: 100%;
     }
+
     .container {
       max-width: 900px;
       margin: 2rem auto;
       padding: 0 1rem;
     }
+
     h1 {
       font-size: 1.5rem;
-      margin-bottom: 1.5rem;
+      margin-bottom: 1.25rem;
       text-align: center;
+    }
+
+    .mode-selector {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      margin-bottom: 1rem;
+      padding: 0.75rem;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      flex-wrap: wrap;
+    }
+
+    .mode-selector label {
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .mode-selector input {
+      margin-right: 0.35rem;
     }
 
     .top-controls {
@@ -51,55 +84,69 @@
       margin-bottom: 1rem;
       flex-wrap: wrap;
     }
+
+    button {
+      color: #fff;
+      border: none;
+      padding: 0.6rem 1.1rem;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition:
+        background 0.2s ease,
+        transform 0.05s ease;
+    }
+
+    button:active {
+      transform: translateY(1px);
+    }
+
+    button:disabled {
+      background: var(--muted) !important;
+      cursor: not-allowed;
+    }
+
     .btn-reset {
       background: var(--btn-danger);
-      color: #fff;
-      border: none;
-      padding: 0.5rem 0.9rem;
-      border-radius: 6px;
       font-size: 0.85rem;
       font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s ease;
     }
-    .btn-reset:hover { background: var(--btn-danger-hover); }
+
+    .btn-reset:hover {
+      background: var(--btn-danger-hover);
+    }
+
     .btn-end {
       background: var(--btn-end);
-      color: #fff;
-      border: none;
-      padding: 0.5rem 0.9rem;
-      border-radius: 6px;
       font-size: 0.85rem;
       font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s ease;
     }
-    .btn-end:hover { background: var(--btn-end-hover); }
+
+    .btn-end:hover {
+      background: var(--btn-end-hover);
+    }
+
     .btn-stop {
       background: var(--btn-stop);
-      color: #fff;
-      border: none;
-      padding: 0.5rem 0.9rem;
-      border-radius: 6px;
       font-size: 0.85rem;
       font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s ease;
     }
-    .btn-stop:hover { background: var(--btn-stop-hover); }
 
-    .progress-info {
+    .btn-stop:hover {
+      background: var(--btn-stop-hover);
+    }
+
+    .progress-info,
+    .level-display {
       font-size: 0.85rem;
       color: var(--muted);
       text-align: right;
       margin-bottom: 0.5rem;
     }
+
     .level-display {
-      font-size: 0.9rem;
-      font-weight: bold;
       color: var(--text);
-      text-align: right;
-      margin-bottom: 0.5rem;
+      font-weight: bold;
     }
 
     .header-row {
@@ -108,6 +155,7 @@
       margin-bottom: 1rem;
       font-weight: bold;
     }
+
     .header-item {
       background: var(--panel);
       border: 1px solid var(--border);
@@ -116,8 +164,16 @@
       font-family: monospace;
       letter-spacing: 0.05em;
     }
-    .data-number { width: 5ch; text-align: center; }
-    .speaker-name { width: 10ch; text-align: left; }
+
+    .data-number {
+      width: 5ch;
+      text-align: center;
+    }
+
+    .speaker-name {
+      width: 10ch;
+      text-align: left;
+    }
 
     .main-panel {
       background: var(--panel);
@@ -125,22 +181,36 @@
       border-radius: 8px;
       padding: 1.5rem;
       margin-bottom: 1.5rem;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
     }
-    .row { margin-bottom: 1.25rem; }
+
+    .row {
+      margin-bottom: 1.25rem;
+    }
+
     .label-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 0.25rem;
     }
-    .label { font-size: 0.85rem; color: var(--muted); }
-    .content { font-size: 1.05rem; min-height: 1.6em; }
+
+    .label {
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .content {
+      font-size: 1.05rem;
+      min-height: 1.6em;
+    }
+
     .english-row {
       display: flex;
       gap: 0.75rem;
       align-items: flex-start;
     }
+
     .english {
       flex: 1;
       background: var(--light);
@@ -150,34 +220,26 @@
       font-weight: 500;
       display: none;
     }
+
     .btn-read {
       background: var(--btn-read);
-      color: #fff;
-      border: none;
-      padding: 0.6rem 1rem;
-      border-radius: 6px;
       font-size: 0.9rem;
       font-weight: 600;
-      cursor: pointer;
       white-space: nowrap;
-      transition: background 0.2s ease;
     }
-    .btn-read:hover { background: var(--btn-read-hover); }
-    .btn-read:disabled { background: var(--muted); cursor: not-allowed; }
+
+    .btn-read:hover {
+      background: var(--btn-read-hover);
+    }
 
     .btn-ok {
       background: var(--btn-ok);
-      color: #fff;
-      border: none;
-      padding: 0.6rem 1.1rem;
-      border-radius: 6px;
-      font-size: 0.95rem;
       font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s ease;
     }
-    .btn-ok:hover { background: var(--btn-ok-hover); }
-    .btn-ok:disabled { background: var(--muted); cursor: not-allowed; }
+
+    .btn-ok:hover {
+      background: var(--btn-ok-hover);
+    }
 
     .controls {
       display: flex;
@@ -187,23 +249,20 @@
       flex-wrap: wrap;
       gap: 0.75rem;
     }
+
     .controls-left {
       display: flex;
       gap: 0.75rem;
+      flex-wrap: wrap;
     }
-    button {
+
+    .btn-next {
       background: var(--accent);
-      color: #fff;
-      border: none;
-      padding: 0.6rem 1.1rem;
-      border-radius: 6px;
-      font-size: 0.95rem;
-      cursor: pointer;
-      transition: background 0.2s ease, transform 0.05s ease;
     }
-    button:hover { background: #1d4ed8; }
-    button:active { transform: translateY(1px); }
-    button:disabled { background: var(--muted); cursor: not-allowed; }
+
+    .btn-next:hover {
+      background: #1d4ed8;
+    }
 
     .footer-note {
       text-align: center;
@@ -214,29 +273,32 @@
 
     .congrats-overlay {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      inset: 0;
       background: rgba(0, 0, 0, 0.7);
       display: none;
       justify-content: center;
       align-items: center;
       z-index: 1000;
+      padding: 1rem;
     }
+
     .congrats-box {
       background: #fff;
       border-radius: 12px;
       padding: 2rem 3rem;
       text-align: center;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+      max-width: 500px;
+      width: 100%;
     }
+
     .congrats-title {
       font-size: 2rem;
       font-weight: bold;
       color: #059669;
       margin-bottom: 1rem;
     }
+
     .congrats-message {
       font-size: 1.1rem;
       color: var(--text);
@@ -244,29 +306,108 @@
     }
 
     @media (max-width: 1024px) {
-      .container { margin: 1rem auto; padding: 0 0.75rem; }
-      .main-panel { padding: 1.25rem; }
-      .controls { flex-direction: column; align-items: stretch; }
-      .controls-left { justify-content: flex-end; }
+      .container {
+        margin: 1rem auto;
+        padding: 0 0.75rem;
+      }
+
+      .main-panel {
+        padding: 1.25rem;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .top-controls {
+        justify-content: center;
+      }
+
+      .header-row {
+        gap: 0.5rem;
+      }
+
+      .main-panel {
+        padding: 1rem;
+      }
+
+      .controls {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .controls-left {
+        justify-content: center;
+      }
+
+      .controls button {
+        width: 100%;
+      }
+
+      .english-row {
+        flex-direction: column;
+      }
+
+      .btn-read {
+        align-self: flex-end;
+      }
     }
   </style>
 </head>
+
 <body>
   <div class="container">
     <h1>瞬間英作文トレーニング</h1>
 
-    <div class="top-controls">
-      <button id="resetBtn" class="btn-reset">進捗リセット</button>
-      <button id="endBtn" class="btn-end">終了</button>
-      <button id="stopBtn" class="btn-stop" style="display:none;">停止</button>
+    <div class="mode-selector">
+      <label>
+        <input
+          type="radio"
+          name="practiceMode"
+          value="instant"
+          checked
+        />
+        瞬間英作文モード
+      </label>
+
+      <label>
+        <input
+          type="radio"
+          name="practiceMode"
+          value="memorize"
+        />
+        暗記モード
+      </label>
     </div>
 
-    <div class="progress-info" id="progressInfo">－</div>
-    <div class="level-display" id="levelDisplay">暗記レベル：－</div>
+    <div class="top-controls">
+      <button id="resetBtn" class="btn-reset">
+        進捗リセット
+      </button>
+
+      <button id="endBtn" class="btn-end">
+        終了
+      </button>
+
+      <button id="stopBtn" class="btn-stop" style="display: none;">
+        停止
+      </button>
+    </div>
+
+    <div id="progressInfo" class="progress-info">
+      －
+    </div>
+
+    <div id="levelDisplay" class="level-display">
+      暗記レベル：－
+    </div>
 
     <div class="header-row">
-      <div id="dispNumber" class="header-item data-number">-</div>
-      <div id="dispSpeaker" class="header-item speaker-name">-</div>
+      <div id="dispNumber" class="header-item data-number">
+        -
+      </div>
+
+      <div id="dispSpeaker" class="header-item speaker-name">
+        -
+      </div>
     </div>
 
     <div class="main-panel">
@@ -274,46 +415,74 @@
         <div class="label">日本語</div>
         <div id="dispJapanese" class="content">－</div>
       </div>
+
       <div class="row">
         <div class="label-row">
           <div class="label">英文</div>
-          <button id="btnEngRead" class="btn-read" disabled>Eng_Read</button>
+
+          <button id="btnEngRead" class="btn-read" disabled>
+            Eng_Read
+          </button>
         </div>
+
         <div class="english-row">
-          <div id="dispEnglish" class="content english">－</div>
+          <div id="dispEnglish" class="content english">
+            －
+          </div>
         </div>
       </div>
 
       <div class="controls">
         <div class="controls-left">
-          <button id="loadBtn">データ読み込み</button>
-          <button id="btnOK" class="btn-ok" disabled>OK</button>
+          <button id="loadBtn" class="btn-next">
+            データ読み込み
+          </button>
+
+          <button id="btnOK" class="btn-ok" disabled>
+            OK
+          </button>
         </div>
       </div>
     </div>
 
     <div class="footer-note">
-      データファイル：Eng_000000.csv（HTML と同じフォルダーに配置してください）
+      データファイル：
+      AI_260629_1.csv
+      （HTMLと同じフォルダーに配置してください）
     </div>
   </div>
 
   <div id="congratsOverlay" class="congrats-overlay">
     <div class="congrats-box">
-      <div class="congrats-title">🎉 Congratulations! 🎉</div>
-      <div class="congrats-message">すべての英文を完全暗記しました！<br>おめでとうございます！</div>
-      <button id="closeCongrats" class="btn-ok">閉じる</button>
+      <div class="congrats-title">
+        Congratulations!
+      </div>
+
+      <div class="congrats-message">
+        すべての英文を完全暗記しました！<br />
+        「停止」ボタンを押して学習を終了できます。
+      </div>
+
+      <button id="closeCongrats" class="btn-ok">
+        閉じる
+      </button>
     </div>
   </div>
 
   <script>
+    "use strict";
+
     let allRows = [];
     let currentIndex = 0;
     let timer = null;
     let currentEnglishText = "";
     let lastCompletedIndex = 0;
     let fanfareAudio = null;
+    let practiceMode = "instant";
+
     const STORAGE_KEY = "tkym_progress";
     const LEVELS_KEY = "tkym_levels";
+    const MODE_KEY = "tkym_mode";
 
     const loadBtn = document.getElementById("loadBtn");
     const resetBtn = document.getElementById("resetBtn");
@@ -321,21 +490,39 @@
     const stopBtn = document.getElementById("stopBtn");
     const btnEngRead = document.getElementById("btnEngRead");
     const btnOK = document.getElementById("btnOK");
+
     const dispNumber = document.getElementById("dispNumber");
     const dispSpeaker = document.getElementById("dispSpeaker");
     const dispJapanese = document.getElementById("dispJapanese");
     const dispEnglish = document.getElementById("dispEnglish");
     const progressInfo = document.getElementById("progressInfo");
     const levelDisplay = document.getElementById("levelDisplay");
+
     const congratsOverlay = document.getElementById("congratsOverlay");
     const closeCongrats = document.getElementById("closeCongrats");
+
+    const modeRadios = document.querySelectorAll(
+      'input[name="practiceMode"]'
+    );
+
+    function getToday() {
+      const now = new Date();
+
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, "0");
+      const day = String(now.getDate()).padStart(2, "0");
+
+      return `${year}-${month}-${day}`;
+    }
 
     function initSpeech() {
       if ("speechSynthesis" in window) {
         window.speechSynthesis.getVoices();
       }
     }
+
     initSpeech();
+
     if (document.readyState !== "complete") {
       window.addEventListener("load", initSpeech);
     }
@@ -344,250 +531,405 @@
       fanfareAudio = new Audio("fanfare.mp3");
       fanfareAudio.volume = 0.8;
     }
+
     loadFanfare();
+
+    function loadStoredMode() {
+      const storedMode = localStorage.getItem(MODE_KEY);
+
+      if (
+        storedMode === "instant" ||
+        storedMode === "memorize"
+      ) {
+        practiceMode = storedMode;
+      }
+
+      modeRadios.forEach((radio) => {
+        radio.checked = radio.value === practiceMode;
+      });
+    }
+
+    function saveMode() {
+      localStorage.setItem(MODE_KEY, practiceMode);
+    }
+
+    modeRadios.forEach((radio) => {
+      radio.addEventListener("change", () => {
+        practiceMode = radio.value;
+        saveMode();
+
+        if (allRows.length > 0) {
+          showCurrentRow();
+        }
+      });
+    });
 
     function loadProgress() {
       const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        const [lastDate, lastIndex] = stored.split(",");
-        return { date: lastDate, index: parseInt(lastIndex, 10) || 0 };
+
+      if (!stored) {
+        return null;
       }
-      return null;
+
+      const parts = stored.split(",");
+      const date = parts[0] || "";
+      const index = parseInt(parts[1], 10);
+
+      return {
+        date,
+        index: Number.isFinite(index) ? index : 0
+      };
     }
 
     function loadLevels() {
       const stored = localStorage.getItem(LEVELS_KEY);
-      if (stored) {
-        return JSON.parse(stored);
+
+      if (!stored) {
+        return {};
       }
+
+      try {
+        const levels = JSON.parse(stored);
+
+        if (
+          levels &&
+          typeof levels === "object" &&
+          !Array.isArray(levels)
+        ) {
+          return levels;
+        }
+      } catch (error) {
+        console.warn("暗記レベルの読み込みに失敗しました。");
+      }
+
       return {};
     }
 
     function saveLevels(levels) {
-      localStorage.setItem(LEVELS_KEY, JSON.stringify(levels));
+      localStorage.setItem(
+        LEVELS_KEY,
+        JSON.stringify(levels)
+      );
+    }
+
+    function normalizeLevel(value) {
+      if (value === undefined || value === null) {
+        return 0;
+      }
+
+      const text = String(value).trim();
+
+      if (text === "") {
+        return 0;
+      }
+
+      const number = parseInt(text, 10);
+
+      if (!Number.isFinite(number)) {
+        return 0;
+      }
+
+      return Math.min(5, Math.max(0, number));
+    }
+
+    function getLevelForRow(row) {
+      const levels = loadLevels();
+
+      if (
+        Object.prototype.hasOwnProperty.call(
+          levels,
+          row.number
+        )
+      ) {
+        return normalizeLevel(levels[row.number]);
+      }
+
+      return normalizeLevel(row.level);
     }
 
     function saveProgress(index) {
-      const today = new Date().toISOString().slice(0, 10);
-      localStorage.setItem(STORAGE_KEY, `${today},${index}`);
+      const today = getToday();
+
+      localStorage.setItem(
+        STORAGE_KEY,
+        `${today},${index}`
+      );
+
       updateProgressInfo(today, index);
       lastCompletedIndex = index;
     }
 
     function updateProgressInfo(date, index) {
-      progressInfo.textContent = `最終学習：${date}（データ番号 ${index}）`;
+      progressInfo.textContent =
+        `最終学習：${date}（データ番号 ${index}）`;
     }
 
     function downloadProgressFile() {
-      const today = new Date().toISOString().slice(0, 10);
+      const today = getToday();
       const content = `${today},${lastCompletedIndex}`;
-      const blob = new Blob([content], { type: "text/plain" });
+
+      const blob = new Blob(
+        [content],
+        { type: "text/plain;charset=utf-8" }
+      );
+
       const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "tkym_eng.txt";
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+      const link = document.createElement("a");
+
+      link.href = url;
+      link.download = "tkym_eng.txt";
+
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
       URL.revokeObjectURL(url);
     }
 
     function checkAllCompleted() {
-      const levels = loadLevels();
-      for (let i = 0; i < allRows.length; i++) {
-        const level = levels[allRows[i].number] || 0;
-        if (level < 5) {
-          return false;
-        }
+      if (allRows.length === 0) {
+        return false;
       }
-      return true;
+
+      return allRows.every((row) => {
+        return getLevelForRow(row) >= 5;
+      });
     }
 
     function showCongratulations() {
       congratsOverlay.style.display = "flex";
-      stopBtn.style.display = "block";
+      stopBtn.style.display = "inline-block";
     }
 
-    async function loadData() {
-      resetDisplay();
-      loadBtn.disabled = true;
-      
-      try {
-        const response = await fetch("Eng_000000.csv");
-        if (!response.ok) {
-          throw new Error("CSV ファイルが見つかりません：Eng_000000.csv");
-        }
-        const text = await response.text();
-        const lines = text.split(/\r?\n/).filter(line => line.trim() !== "");
-        
-        if (lines.length === 0) {
-          throw new Error("CSV ファイルが空です");
-        }
-        
-        const startRow = lines[0].includes("話者") || lines[0].includes("Speaker") ? 1 : 0;
-        allRows = [];
-        
-        for (let i = startRow; i < lines.length; i++) {
-          const cols = parseCSVLine(lines[i]);
-          
-          // 4 列以上あれば OK（暗記レベルは 5 列目、なくても可）
-          if (cols.length < 4) {
-            console.warn(`行 ${i + 1}: 列数が不足しています (${cols.length}列)`);
-            continue;
-          }
-          
-          // 暗記レベル：5 列目があればそれを使う、なければ 0
-          let level = 0;
-          if (cols.length >= 5) {
-            const levelStr = cols[4].trim();
-            if (levelStr !== "" && !isNaN(levelStr)) {
-              level = parseInt(levelStr, 10);
-            }
-          }
-          
-          allRows.push({
-            number: cols[0].trim(),
-            speaker: cols[1].trim(),
-            japanese: cols[2].trim(),
-            english: cols[3].trim(),
-            level: level
-          });
-        }
-        
-        if (allRows.length === 0) {
-          throw new Error("有効なデータ行がありません。CSV の形式を確認してください。");
-        }
-        
-        console.log(`読み込んだデータ数：${allRows.length}行`);
-        
-        const progress = loadProgress();
-        if (progress && progress.index >= 1) {
-          currentIndex = progress.index;
-          lastCompletedIndex = progress.index;
-        } else {
-          currentIndex = 0;
-          lastCompletedIndex = 0;
-        }
-        
-        findNextNonCompleted();
-        
-        if (checkAllCompleted()) {
-          showCongratulations();
-          loadBtn.disabled = false;
-          return;
-        }
-        
-        showCurrentRow();
-        
-      } catch (err) {
-        console.error("エラー:", err);
-        alert("エラー: " + err.message + "\n\nCSV ファイルの形式：\nデータ番号，話者，日本語，英文 [,暗記レベル]");
-      } finally {
-        loadBtn.disabled = false;
-      }
-    }
-
-    function findNextNonCompleted() {
-      const levels = loadLevels();
-      let found = false;
-      
-      for (let i = currentIndex; i < allRows.length; i++) {
-        const level = levels[allRows[i].number] || 0;
-        if (level < 5) {
-          currentIndex = i;
-          found = true;
-          break;
-        }
-      }
-      
-      if (!found) {
-        for (let i = 0; i < currentIndex; i++) {
-          const level = levels[allRows[i].number] || 0;
-          if (level < 5) {
-            currentIndex = i;
-            found = true;
-            break;
-          }
-        }
-      }
-      
-      if (!found) {
-        showCongratulations();
-      }
+    function hideCongratulations() {
+      congratsOverlay.style.display = "none";
     }
 
     function parseCSVLine(line) {
       const result = [];
       let current = "";
       let inQuotes = false;
+
       for (let i = 0; i < line.length; i++) {
-        const ch = line[i];
+        const character = line[i];
+
         if (inQuotes) {
-          if (ch === '"') {
-            if (line[i+1] === '"') {
+          if (character === '"') {
+            if (line[i + 1] === '"') {
               current += '"';
               i++;
             } else {
               inQuotes = false;
             }
           } else {
-            current += ch;
+            current += character;
           }
+        } else if (character === '"') {
+          inQuotes = true;
+        } else if (character === ",") {
+          result.push(current);
+          current = "";
         } else {
-          if (ch === '"') {
-            inQuotes = true;
-          } else if (ch === ',') {
-            result.push(current);
-            current = "";
-          } else {
-            current += ch;
-          }
+          current += character;
         }
       }
+
       result.push(current);
       return result;
     }
 
-    function showCurrentRow() {
+    async function loadData() {
+      resetDisplay();
+
+      loadBtn.disabled = true;
       btnEngRead.disabled = true;
-      btnOK.disabled = false;  // データ表示時に OK ボタンを有効化
+      btnOK.disabled = true;
 
-      if (currentIndex >= allRows.length) {
-        dispNumber.textContent = "終了";
-        dispSpeaker.textContent = "-";
-        dispJapanese.textContent = "すべてのデータを読み込みました";
-        dispEnglish.style.display = "none";
-        levelDisplay.textContent = "暗記レベル：－";
-        return;
-      }
+      try {
+        const response = await fetch("AI_260629_1.csv", {
+          cache: "no-store"
+        });
 
-      const row = allRows[currentIndex];
-      const levels = loadLevels();
-      const currentLevel = levels[row.number] || 0;
+        if (!response.ok) {
+          throw new Error(
+            "CSVファイルが見つかりません：AI_260629_1.csv"
+          );
+        }
 
-      if (currentLevel >= 5) {
-        findNextNonCompleted();
+        const text = await response.text();
+
+        const lines = text
+          .split(/\r?\n/)
+          .filter((line) => line.trim() !== "");
+
+        if (lines.length === 0) {
+          throw new Error("CSVファイルが空です。");
+        }
+
+        const firstLine = lines[0];
+
+        const hasHeader =
+          firstLine.includes("話者") ||
+          firstLine.includes("Speaker") ||
+          firstLine.includes("日本語") ||
+          firstLine.includes("English");
+
+        const startRow = hasHeader ? 1 : 0;
+        const rows = [];
+
+        for (let i = startRow; i < lines.length; i++) {
+          const columns = parseCSVLine(lines[i]);
+
+          // 4列あれば読み込み可能
+          if (columns.length < 4) {
+            console.warn(
+              `CSV ${i + 1}行目をスキップ：` +
+              `${columns.length}列しかありません。`
+            );
+            continue;
+          }
+
+          const levelValue =
+            columns.length >= 5
+              ? columns[4]
+              : "";
+
+          rows.push({
+            number: columns[0].trim(),
+            speaker: columns[1].trim(),
+            japanese: columns[2].trim(),
+            english: columns[3].trim(),
+            level: normalizeLevel(levelValue)
+          });
+        }
+
+        if (rows.length === 0) {
+          throw new Error(
+            "有効なデータ行がありません。"
+          );
+        }
+
+        allRows = rows;
+
+        const progress = loadProgress();
+
+        if (
+          progress &&
+          Number.isFinite(progress.index) &&
+          progress.index >= 0
+        ) {
+          currentIndex = progress.index;
+          lastCompletedIndex = progress.index;
+        } else {
+          currentIndex = 0;
+          lastCompletedIndex = 0;
+        }
+
+        currentIndex = currentIndex % allRows.length;
+
         if (checkAllCompleted()) {
           showCongratulations();
           return;
         }
+
+        findNextNonCompleted();
         showCurrentRow();
+
+      } catch (error) {
+        console.error(error);
+
+        alert(
+          "エラー：" + error.message +
+          "\n\nCSV形式：" +
+          "\nデータ番号,話者,日本語,英文,暗記レベル"
+        );
+      } finally {
+        loadBtn.disabled = false;
+      }
+    }
+
+    function findNextNonCompleted() {
+      if (allRows.length === 0) {
+        return false;
+      }
+
+      for (let offset = 0; offset < allRows.length; offset++) {
+        const index =
+          (currentIndex + offset) % allRows.length;
+
+        if (getLevelForRow(allRows[index]) < 5) {
+          currentIndex = index;
+          return true;
+        }
+      }
+
+      return false;
+    }
+
+    function showCurrentRow() {
+      if (timer) {
+        clearTimeout(timer);
+        timer = null;
+      }
+
+      if ("speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+      }
+
+      btnEngRead.disabled = true;
+      btnOK.disabled = true;
+
+      if (allRows.length === 0) {
+        resetDisplay();
         return;
       }
 
+      if (checkAllCompleted()) {
+        showCongratulations();
+        return;
+      }
+
+      if (!findNextNonCompleted()) {
+        showCongratulations();
+        return;
+      }
+
+      const row = allRows[currentIndex];
+      const currentLevel = getLevelForRow(row);
+
       currentEnglishText = row.english;
+
       dispNumber.textContent = row.number;
       dispSpeaker.textContent = row.speaker;
       dispJapanese.textContent = row.japanese;
       dispEnglish.textContent = row.english;
+
+      levelDisplay.textContent =
+        `暗記レベル：${currentLevel}`;
+
+      if (practiceMode === "memorize") {
+        // 暗記モード：
+        // 日本文だけを表示し、英文は隠す
+        dispEnglish.style.display = "none";
+
+        // ボタンを押すと英文表示・発音できる
+        btnEngRead.disabled = false;
+        btnOK.disabled = false;
+
+        return;
+      }
+
+      // 瞬間英作文モード：
+      // 最初は英文を隠し、4秒後に表示・読み上げ
       dispEnglish.style.display = "none";
+      btnEngRead.disabled = true;
+      btnOK.disabled = true;
 
-      levelDisplay.textContent = `暗記レベル：${currentLevel}`;
-
-      if (timer) clearTimeout(timer);
       timer = setTimeout(() => {
         dispEnglish.style.display = "block";
         btnEngRead.disabled = false;
+        btnOK.disabled = false;
+
         speakEnglish(row.english);
         saveProgress(currentIndex + 1);
       }, 4000);
@@ -599,71 +941,112 @@
       dispJapanese.textContent = "－";
       dispEnglish.textContent = "－";
       dispEnglish.style.display = "none";
+      levelDisplay.textContent = "暗記レベル：－";
+
       btnEngRead.disabled = true;
       btnOK.disabled = true;
+
       currentEnglishText = "";
-      levelDisplay.textContent = "暗記レベル：－";
-      if (timer) clearTimeout(timer);
+
+      if (timer) {
+        clearTimeout(timer);
+        timer = null;
+      }
+
       if ("speechSynthesis" in window) {
         window.speechSynthesis.cancel();
       }
     }
 
     function speakEnglish(text) {
-      if (!text || text.trim() === "") return;
-      if (!("speechSynthesis" in window)) {
-        console.warn("このブラウザは音声合成をサポートしていません");
+      if (!text || text.trim() === "") {
         return;
       }
+
+      if (!("speechSynthesis" in window)) {
+        alert(
+          "このブラウザは音声読み上げに対応していません。"
+        );
+        return;
+      }
+
       window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
+
+      const utterance =
+        new SpeechSynthesisUtterance(text);
+
       utterance.lang = "en-US";
       utterance.rate = 0.9;
       utterance.pitch = 1.0;
       utterance.volume = 1.0;
-      let spoken = false;
-      utterance.onstart = () => { spoken = true; };
-      utterance.onend = () => {
-        if (!spoken) {
-          setTimeout(() => {
-            window.speechSynthesis.speak(new SpeechSynthesisUtterance(text));
-          }, 100);
-        }
-      };
-      setTimeout(() => {
-        window.speechSynthesis.speak(utterance);
-      }, 50);
+
+      window.speechSynthesis.speak(utterance);
     }
+
+    function moveToNextRow() {
+      if (allRows.length === 0) {
+        return;
+      }
+
+      currentIndex =
+        (currentIndex + 1) % allRows.length;
+
+      findNextNonCompleted();
+
+      if (checkAllCompleted()) {
+        showCongratulations();
+        return;
+      }
+
+      showCurrentRow();
+    }
+
+    btnEngRead.addEventListener("click", () => {
+      if (!currentEnglishText) {
+        return;
+      }
+
+      // 暗記モードでは、このボタンを押した時に初めて英文を表示
+      dispEnglish.style.display = "block";
+      speakEnglish(currentEnglishText);
+    });
 
     btnOK.addEventListener("click", () => {
       const row = allRows[currentIndex];
-      if (!row) return;
+
+      if (!row) {
+        return;
+      }
 
       const levels = loadLevels();
-      let currentLevel = levels[row.number] || 0;
+      const oldLevel = getLevelForRow(row);
+      const newLevel = Math.min(5, oldLevel + 1);
 
-      if (currentLevel < 5) {
-        currentLevel++;
-        levels[row.number] = currentLevel;
-        saveLevels(levels);
-        levelDisplay.textContent = `暗記レベル：${currentLevel}`;
+      levels[row.number] = newLevel;
+      saveLevels(levels);
 
-        if (currentLevel === 5) {
-          if (fanfareAudio) {
-            fanfareAudio.play().catch(() => {});
-          }
-          alert(`🎉 おめでとうございます！\n「${row.japanese}」が完全暗記になりました！`);
+      levelDisplay.textContent =
+        `暗記レベル：${newLevel}`;
+
+      if (newLevel === 5 && oldLevel < 5) {
+        if (fanfareAudio) {
+          fanfareAudio.currentTime = 0;
+
+          fanfareAudio.play().catch(() => {
+            console.warn(
+              "ファンファーレを再生できませんでした。"
+            );
+          });
         }
 
-        if (checkAllCompleted()) {
-          showCongratulations();
-        }
+        alert(
+          "おめでとうございます！\n" +
+          `「${row.japanese}」が完全暗記になりました。`
+        );
       }
-    });
 
-    btnEngRead.addEventListener("click", () => {
-      if (currentEnglishText && currentEnglishText.trim() !== "") {
-        speakEnglish(currentEnglishText);
+      if (checkAllCompleted()) {
+        showCongratulations();
       }
     });
 
@@ -671,50 +1054,80 @@
       if (allRows.length === 0) {
         loadData();
       } else {
-        currentIndex++;
-        findNextNonCompleted();
-        showCurrentRow();
+        moveToNextRow();
       }
     });
 
     resetBtn.addEventListener("click", () => {
-      if (confirm("進捗データをリセットしますか？")) {
-        localStorage.removeItem(STORAGE_KEY);
-        localStorage.removeItem(LEVELS_KEY);
-        progressInfo.textContent = "－";
-        levelDisplay.textContent = "暗記レベル：－";
-        currentIndex = 0;
-        lastCompletedIndex = 0;
-        resetDisplay();
-        congratsOverlay.style.display = "none";
-        stopBtn.style.display = "none";
-        alert("進捗をリセットしました。次回はデータ 1 番から開始します。");
+      const confirmed = confirm(
+        "学習進捗と暗記レベルをリセットしますか？"
+      );
+
+      if (!confirmed) {
+        return;
       }
+
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(LEVELS_KEY);
+
+      currentIndex = 0;
+      lastCompletedIndex = 0;
+
+      hideCongratulations();
+      stopBtn.style.display = "none";
+
+      resetDisplay();
+
+      progressInfo.textContent = "－";
+
+      alert(
+        "進捗をリセットしました。\n" +
+        "次回はデータ1番から開始します。"
+      );
     });
 
     endBtn.addEventListener("click", () => {
       downloadProgressFile();
-      alert("tkym_eng.txt をダウンロードしました。");
+
+      alert(
+        "tkym_eng.txtをダウンロードしました。"
+      );
     });
 
     stopBtn.addEventListener("click", () => {
-      if (confirm("学習を停止しますか？")) {
-        congratsOverlay.style.display = "none";
-        stopBtn.style.display = "none";
-        resetDisplay();
-        dispNumber.textContent = "停止中";
-        dispJapanese.textContent = "学習を停止しました";
+      const confirmed = confirm(
+        "学習を停止しますか？"
+      );
+
+      if (!confirmed) {
+        return;
       }
+
+      hideCongratulations();
+      stopBtn.style.display = "none";
+
+      resetDisplay();
+
+      dispNumber.textContent = "停止中";
+      dispJapanese.textContent =
+        "学習を停止しました。";
     });
 
     closeCongrats.addEventListener("click", () => {
-      congratsOverlay.style.display = "none";
+      hideCongratulations();
     });
 
-    const progress = loadProgress();
-    if (progress) {
-      updateProgressInfo(progress.date, progress.index);
-      lastCompletedIndex = progress.index;
+    loadStoredMode();
+
+    const savedProgress = loadProgress();
+
+    if (savedProgress) {
+      updateProgressInfo(
+        savedProgress.date,
+        savedProgress.index
+      );
+
+      lastCompletedIndex = savedProgress.index;
     }
   </script>
 </body>
