@@ -744,10 +744,11 @@
       loadBtn.disabled = true;
       btnEngRead.disabled = true;
       btnOK.disabled = true;
-	console.log("======pass1----");
-
+	
       try {
-        const response = await fetch("Eng_000000.csv");
+	const response = await fetch("Eng_000000.csv", {
+          cache: "no-store"
+        });
 
         if (!response.ok) {
           throw new Error(
