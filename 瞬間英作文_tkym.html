@@ -744,10 +744,10 @@
       loadBtn.disabled = true;
       btnEngRead.disabled = true;
       btnOK.disabled = true;
+	console.log("======pass1----");
 
       try {
-        const response = await fetch("Eng_000000.csv
-        });
+        const response = await fetch("Eng_000000.csv");
 
         if (!response.ok) {
           throw new Error(
@@ -1051,6 +1051,7 @@
 
     loadBtn.addEventListener("click", () => {
       if (allRows.length === 0) {
+　　　　console.log("----pass0----");
         loadData();
       } else {
         moveToNextRow();
